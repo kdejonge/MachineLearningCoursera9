@@ -1,0 +1,134 @@
+---
+title: "Prediction Assignment"
+author: "K de Jonge"
+date: "October 26, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Introduction/Goal
+
+This report is been written for the Practical Machine Learning course of the Data Science Specialization at Coursera. The goal of this assignment is to predict the manner in which the participants (6) did the excersise. This variable will be the 'classe' variable in the trainingset. The prediction model will be used to predict 20 test cases. Before starting this assignment I downloaded the data and copied the data to my workspace.
+
+## Preparing the data
+
+
+Before we start, we will download the desired librarys:
+```{r packages}
+library(ggplot2)
+library(caret)
+library(fscaret)
+library(randomForest)
+library(e1071)
+```
+
+And get the data in R:
+```{r data}
+setwd("x")
+training <- read.table("pml-training.csv", sep = ",", header = TRUE)
+testing <- read.table("pml-testing.csv", sep = ",", header = TRUE)
+```
+
+To make it reproducible, we will set a seed:
+```{r seed}
+set.seed(1234)
+```
+
+And we will split the data in a training set and validation set:
+```{r split}
+inTrain <- createDataPartition(y=training$classe, p=0.7, list=FALSE)
+training <- training[inTrain, ]
+validation <- training[-inTrain, ]
+```
+
+Now, we will take a look at the data:
+```{r summary}
+head(training)
+head(validation)
+
+```
+
+We need to remove the predictors with NA values, the columns who unfit for prediction and the near zero variance predictors:
+```{r clean}
+training <- training[, colSums(is.na(training)) == 0]
+validation <- validation[, colSums(is.na(validation)) == 0]
+training <- training[, -(1:5)]
+validation <- validation[, -(1:5)]
+nzv <- nearZeroVar(training)
+training <- training[, -nzv]
+validation <- validation[, -nzv]
+```
+
+## Model
+
+I will use a Random Forest, in the course this model was presented as the model with the most accurate results.  
+We need to remove the predictors with NA values, the columns who unfit for prediction and the near zero variance predictors:
+```{r model}
+model1 <- train(classe ~., method = "rf", data = training, verbose = TRUE, trControl = trainControl(method="cv"), number = 3)
+prediction1 <- predict(model1, training)
+confustionmatrix1 <- confusionMatrix(prediction1, training$classe)
+confustionmatrix1
+```
+
+
+We will plot the matrix results:
+```{r plot 1, echo=TRUE}
+plot(confustionmatrix1$table, col = confustionmatrix1$byClass, 
+     main = paste("Random Forest - Accuracy =",
+                  round(confustionmatrix1$overall['Accuracy'], 4)))
+```
+
+```{r model 2}
+prediction2 <- predict(model1, validation)
+confustionmatrix2 <- confusionMatrix(prediction2, validation$classe)
+confustionmatrix2
+```
+
+And, we will plot the matrix results again:
+```{r plot2, echo=TRUE}
+plot(confustionmatrix2$table, col = confustionmatrix2$byClass, 
+     main = paste("Random Forest - Accuracy =",
+                  round(confustionmatrix2$overall['Accuracy'], 4)))
+```
+
+
+As well, we will take a look at the decision tree
+```{r dct}
+set.seed(1234)
+library(rpart)
+library(rpart.plot)
+install.packages("rattle")
+library(rattle)
+DecTree <- rpart(classe ~., data = training, method="class")
+rpart.plot(DecTree)
+```
+
+
+
+# COnclusion
+The model is not overfit when training. The accurancy is still very high.
+
+## Testing the model
+
+We will use the same feature selection method as before:
+```{r model3}
+testing <- testing[, colSums(is.na(testing)) == 0]
+testing <- testing[, -(1:5)]
+nzvt <- nearZeroVar(testing)
+testing <- testing[, -nzvt]
+```
+
+Finally, we will test the random forest test on the test data:
+```{r model4}
+prediction3 <- predict(model1, testing)
+prediction3
+```
+
+
+
+
+

@@ -1,0 +1,26 @@
+RMarkDown Presentation and Plotly
+========================================================
+author: Kristin de Jonge
+date: 22/11/2018
+autosize: true
+
+First Slide
+========================================================
+
+For the 9th course of the Data Science Specialization you need to create a  web page using R Markdown that features a plot created with Plotly. 
+
+Slide With Code
+========================================================
+
+```{r}
+head(mtcars)
+```
+
+Slide With Plotly plot
+========================================================
+
+```{r, echo=FALSE}
+library(plotly)
+plot_ly(data = mtcars, x = ~wt, y = ~hp)
+
+```

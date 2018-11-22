@@ -1,0 +1,55 @@
+---
+title: 'Peer-graded assignment: R Markdown and Plotly'
+author: "K de Jonge"
+date: "November 18, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+For the 9th course of the Data Science Specialization you need to create a  web page using R Markdown that features a plot created with Plotly. Make sure plotly, gapminder and ggplot2 are installed before starting.
+
+## Load libraries
+```{r libaries}
+library(plotly)
+packageVersion('plotly')
+```
+
+## Create plot
+```{r data}
+summary(mtcars)
+head(mtcars)
+
+```
+
+## Create 3D Scatter plot with plotly
+```{r plot}
+x <- data.frame(mtcars$am)
+x[x==0] <- 'Automatic'
+x[x==1] <- 'Manual'
+mtcars$am[which(mtcars$am == 0)] <- 'Automatic'
+mtcars$am[which(mtcars$am == 1)] <- 'Manual'
+mtcars$am <- as.factor(mtcars$am)
+
+p <- plot_ly(mtcars, x = ~wt, y = ~hp, z = ~qsec, color = ~am, colors = c('#BF382A', '#0C4B8E')) %>%
+  add_markers() %>%
+  layout(scene = list(xaxis = list(title = 'Weight'),
+                     yaxis = list(title = 'Gross horsepower'),
+                     zaxis = list(title = '1/4 mile time')))
+p
+
+q <- plot_ly(data = mtcars, x = ~wt, y = ~hp)
+q 
+
+```
+
+
+
+
+
+
+
